@@ -1,0 +1,81 @@
+<div id="app"></div>
+
+
+<script>
+  function h(tag, props, ...children) {
+    const elm = document.createElement(tag);
+    for (const prop in props) {
+      if (prop === 'style') {
+        for (const s in props[prop]) {
+          elm.style[s] = props[prop][s];
+        }
+      } else if (/^on\w+/.test(prop)) {
+        elm.addEventListener(prop.substring(2), props[prop], false);
+      } else {
+        elm.setAttribute(prop, props[prop]);
+      }
+    }
+
+    if (Array.isArray(children)) {
+      for (const child of children) {
+        if (typeof child === 'string') {
+          elm.appendChild(document.createTextNode(child));
+        } else {
+          elm.appendChild(child);
+        }
+      }
+    } else if (typeof children !== 'undefined' && !children) {
+      elm.appendChild(children);
+    }
+    return elm;
+  }
+
+
+  const app = document.getElementById('app');
+  // const e1 = h(
+  //   'a',
+  //   { href: 'https://npm.im/hyperscript', target: '_blank' },
+  //   'open hyperscript page'
+  // );
+  // app.appendChild(e1);
+
+    console.log(h('div').outerHTML);
+    console.log(h('div',null, 'text').outerHTML);
+    console.log(h('div',{id: 'divid'}, 'text').outerHTML);
+    console.log(h('div',{style: {backgroundColor: 'red'}}, 'text').outerHTML);
+    console.log(h('div',{style: {'background-color': 'red'}}, 'text', h('span', {}, 'span tag')).outerHTML);
+
+  // const e2 = h('div', { style: { 'background-color': '#f22', fontSize: '20px' } }, h(
+  //   'a',
+  //   { href: 'https://npm.im/hyperscript' },
+  //   'open hyperscript page'
+  // ));
+  // app.appendChild(e2);
+
+  // const e3 = h('button', { onclick: () => alert('test') }, 'click me');
+  // app.appendChild(e3);
+
+  var elements = h("div", {
+    style: {
+      backgroundColor: '#ccf'
+    }
+  }, h("h2", null, "tsx sample"), h("div", {
+    id: "div1",
+    className: "classname1"
+  }, h("input", {
+    type: "text",
+    id: "text1",
+    value: "text1"
+  }), h("button", {
+    onclick: () => {
+      alert(document.getElementById('text1').value);
+    }
+  }, "show textbox value")), h("a", {
+    href: "https://npm.im/hyperscript",
+    target: "_blank"
+  }, "open hyperscript page"));
+
+
+
+  app.appendChild(elements);
+</script>
