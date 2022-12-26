@@ -1,23 +1,80 @@
-# jsxから自作関数でDOMに変換するサンプル
+# jsxで生成したDOMをjQueryで使うサンプル
 
 ## はじめに
 
-jsx(tsx)を使う場合、最終的なDOM化はライブラリ(ReactやVue)がやってくれています。
+jsxは便利な反面、最終的なDOM化はライブラリ(ReactやVue)が勝手にやってくれます。
+しかし、jsxをjQueryと組み合わせて使う方法が見つかりませんでした。
+
+* やりたいことは下記のように、文字列で追加するのをやめて、jsxで追加することです(第1章)
+```javascript
+// jQueryで追加する場合
+ $('#app').append('<p><strong>要素の追加テストです。</strong></p>');
+```
+
+```javascript
+// jsxで追加する場合
+ $('#app').append(<p><strong>要素の追加テストです。</strong></p>);
+```
+
+* jsxではjsxで型のチェックができないため、tsx化＋タグの型チェックも行います(第2章)
+
+
+
+## 第1章 jsxで生成したDOMをjQueryで追加する
+
+jsxをbabelでトランスパイルすると、標準では`React.createElement()`の呼び出しに変換されます。
+  ⇒ Reactが読み込まれていないと実行ができないため、コンパイルオプションを変更します
+
+* 変換前
+```javascript
+const dom = <p><strong>要素の追加テストです。</strong></p>;
+console.log(dom)
+```
+
+* 変換後(babel)
+```javascript
+var dom = /*#__PURE__*/React.createElement("p", null,
+            /*#__PURE__*/React.createElement("strong", null, "要素の追加テストです。")
+            );
+console.log(dom);
+```
+
+* やること
+  * `React.createElement()` を `h()`に変更する
+  * DOMを生成する`h(tag, props, ...children)`関数を作る
+
+
+
 
 それを独自のDOM生成関数でやってみます。
 簡単に実行できるように`babel/standalone`を使い、１htmlファイルのみのプログラムです
 
 
-* ①DOMを生成する独自関数を作る(React.createElement()や、[hyperscript](https://github.com/hyperhype/hyperscript)みたいな関数)
-* ②[babel/standalone](https://babeljs.io/docs/en/babel-standalone)を使い、jsxをコンパイルできる環境を設定する(1つのHTMLファイル内で)
+
+### ①[babel/standalone](https://babeljs.io/docs/en/babel-standalone)を使い、jsxをコンパイルできる環境を設定する(1つのHTMLファイル内で)
+
+```html
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script>
+    Babel.registerPreset('jsx', {
+      presets: [
+        [Babel.availablePresets['env']]
+      ],
+      plugins: [
+          [
+            Babel.availablePlugins['transform-react-jsx'],
+            {pragma:'h', pragmaFrag: 'div'},
+          ]
+      ],
+    });
+  </script>
+```
+
+### ①DOMを生成する`h(tag, props, ...children)`関数を作る
 * ③jsxからDOMを生成して画面に表示し、下記を確認する
-  * classやidなど属性が反映されている子tお
+  * classやidなど属性が反映されていること
   * styleが反映されること
   * clickなどのイベントが動作すること
-* ④TypeSciprt(tsx)に変更する
-
-## ①DOMを生成する独自関数を作る
-
 
 DOMに変換する関数仕様（React.createElement()や、hyperscript()のようにDOMを生成する関数）
 
@@ -71,24 +128,6 @@ function h(tag, props, ...children) {
 ```
 
 
-## ②[babel/standalone](https://babeljs.io/docs/en/babel-standalone)を使い、jsxをコンパイルできる環境を設定する(1つのHTMLファイル内で)
-
-```html
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <script>
-    Babel.registerPreset('jsx', {
-      presets: [
-        [Babel.availablePresets['env']]
-      ],
-      plugins: [
-          [
-            Babel.availablePlugins['transform-react-jsx'],
-            {pragma:'h', pragmaFrag: 'div'},
-          ]
-      ],
-    });
-  </script>
-```
 
 
 ## ③jsxからDOMを生成して画面に表示し、下記を確認する
