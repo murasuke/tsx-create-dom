@@ -188,8 +188,11 @@ function h(tag, props, ...children) {
    ⇒ <div style="background-color: red;">text<span>span tag</span></div>
 ```
 
-### jsxからDOMを生成して、表示を確認する
+### ①-3 jsxからDOMを生成(動作確認)
 
+下記[ソース(step1.html)](./step1.html)をブラウザで開くと、jsxからDOMに変換されて表示されます。
+
+* styleやイベントハンドラ(onclick)も動作しています
 
 ![img](./img/img10.png)
 
@@ -264,6 +267,13 @@ function h(tag, props, ...children) {
 <body>
   <div id="app"></div>
   <script type="text/babel" data-presets="jsx" >
+    function OriginalAnchor(text) {
+      return (
+        <a href="https://npm.im/hyperscript" target="_blank">
+          {text}
+        </a>
+      );
+    }
     const elements = (
       <>
         <div style={{ backgroundColor: '#ccf' }}>
@@ -278,6 +288,7 @@ function h(tag, props, ...children) {
         <a href="https://npm.im/hyperscript" target="_blank">
           open hyperscript page
         </a>
+        <OriginalAnchor text="open hyperscript page" />
       </>
     );
 
@@ -288,6 +299,11 @@ function h(tag, props, ...children) {
 ```
 
 
-## ② TypeScript化を行い、tsxで型チェックを行う
+## ② TypeScript化を行い、tsxで型チェックができるようにする
+
+TypeScript化は下記の順番に行います。
+
+1. babelの設定を変更してTypeScriptをコンパイルできるようにする
+1. jsxの型チェックを有効にするため、
 
 
