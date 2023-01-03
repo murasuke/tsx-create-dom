@@ -37,7 +37,8 @@ function h(tag, props, ...children) {
 
   // 子要素の追加
   if (Array.isArray(children)) {
-    for (const child of children) {
+    flatten = children.flat();
+    for (const child of flatten) {
       if (typeof child === 'string') {
         // 文字列の場合、TextNodeを追加
         elm.appendChild(document.createTextNode(child));

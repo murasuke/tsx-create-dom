@@ -50,7 +50,8 @@
 
       // 子要素の追加
       if (Array.isArray(children)) {
-        for (const child of children) {
+        flatten = children.flat();
+        for (const child of flatten) {
           if (typeof child === 'string') {
             // 文字列の場合、TextNodeを追加
             elm.appendChild(document.createTextNode(child));
@@ -78,8 +79,8 @@
             </button>
           </div>
         </div>
-        <a href="https://npm.im/hyperscript" target="_blank">
-          open hyperscript page
+        <a href="https://babeljs.io/docs/en/babel-standalone" target="_blank">
+          babel/standalone
         </a>
       </>
     );
