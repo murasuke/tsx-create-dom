@@ -1,0 +1,109 @@
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      a: { href: string; target: '_blank' | '_self' | '_parent' | '_top' };
+    }
+  }
+}
+
+/**
+ * DOMに変換する関数
+ * ・React.createElement()や、hyperscript()のようにDOMを生成する関数
+ *   tag: タグ名
+ *   props: タグの属性
+ *   children: 子要素
+ * 変換サンプル
+ * ・h('div')
+ *    ⇒ <div></div>
+ * ・h('div',null, 'text')
+ *    ⇒ <div>text</div>
+ */
+export function h(tag, props, ...children) {
+  if (typeof tag === 'function') {
+    // 先頭が大文字のタグは関数に変換されるためそのまま呼び出す
+    return tag(props, children);
+  }
+
+  // elementを作成
+  const elm = document.createElement(tag);
+  // 属性を追加
+  for (const prop in props) {
+    if (prop === 'style') {
+      // styleの追加
+      for (const s in props[prop]) {
+        elm.style[s] = props[prop][s];
+      }
+    } else if (/^on\w+/.test(prop)) {
+      // イベントハンドラの追加
+      elm.addEventListener(prop.substring(2), props[prop], false);
+    } else {
+      // 上記以外の属性を追加
+      elm.setAttribute(prop, props[prop]);
+    }
+  }
+
+  // 子要素の追加
+  if (Array.isArray(children)) {
+    // 入れ子の配列を平坦化
+    const flatten = children.flat(20);
+    for (const child of flatten) {
+      if (typeof child === 'string') {
+        // 文字列の場合、TextNodeを追加
+        elm.appendChild(document.createTextNode(child));
+      } else {
+        // 上記以外はNodeをそのまま追加(先に子側が生成され、それが渡される)
+        elm.appendChild(child);
+      }
+    }
+  }
+  return elm;
+}
+
+// <>～</>(Fragment)変換用
+// tsconfigの「"jsxFragmentFactory": "hf"」で指定した関数
+function hf(props, child) {
+  <div {...props}>{child}</div>;
+}
+
+function Strong(props, child: (HTMLElement | string)[]): HTMLElement {
+  return <strong {...props}>{child}</strong>;
+}
+function StrongAnchor(
+  props: { href: string; target?: '_blank' | '_self' | '_parent' | '_top' },
+  child: (HTMLElement | string)[]
+): HTMLElement {
+  return (
+    <Strong>
+      <a {...props}>【{child}】</a>
+    </Strong>
+  );
+}
+
+const elements = (
+  <>
+    <div style={{ backgroundColor: '#ccf' }}>
+      <h2 style={{ 'font-style': 'italic' }}>
+        jsxから自作関数でDOMに変換するサンプル
+      </h2>
+      <div id="div1" className="classname1">
+        <input type="text" id="text1" value="text1" />
+        <button
+          onclick={() =>
+            alert((document.getElementById('text1') as HTMLInputElement).value)
+          }
+        >
+          show textbox value
+        </button>
+      </div>
+    </div>
+    <StrongAnchor href="https://babeljs.io/docs/en/babel-standalone">
+      babel/standalone
+    </StrongAnchor>
+    <a href="https://babeljs.io" target="_blank" id="id">
+      babel
+    </a>
+  </>
+);
+
+const app: HTMLElement = document.getElementById('app');
+app.appendChild(elements);

@@ -2,13 +2,12 @@
   "compilerOptions": {
     "lib": ["es2019", "DOM"],
     "target": "ES5",
-    "module": "CommonJS",
+    "module": "ESNext",
     "strict": true,
-    "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "jsx": "react",
     "jsxFactory": "h",
-    "jsxFragmentFactory": "hf",
+    "jsxFragmentFactory": "JsxFragmentFactory",
     "noImplicitAny": false,
     "strictNullChecks": false
   },

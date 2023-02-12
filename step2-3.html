@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <head>
   <meta charset="utf-8">
-  <title>jsxから自作関数でDOMに変換するサンプル(独自コンポーネント追加)</title>
+  <title>jsxを自力でDOM化してみよう</title>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script>
     Babel.registerPreset('jsx', {
@@ -11,7 +11,7 @@
       plugins: [
           [
             Babel.availablePlugins['transform-react-jsx'],
-            {pragma:'h', pragmaFrag: 'div'},
+            {pragma:'h', pragmaFrag: '"div"'},
           ]
       ],
     });
@@ -30,11 +30,6 @@
      *    ⇒ <div>text</div>
      */
      function h(tag, props, ...children) {
-      if (typeof tag === 'function') {
-        // 先頭が大文字のタグは関数に変換されるためそのまま呼び出す
-        return tag(props, children);
-      }
-
       // elementを作成
       const elm = document.createElement(tag);
       // 属性を追加
@@ -55,8 +50,7 @@
 
       // 子要素の追加
       if (Array.isArray(children)) {
-        // 入れ子の配列を平坦化
-        const flatten = children.flat(20);
+        flatten = children.flat();
         for (const child of flatten) {
           if (typeof child === 'string') {
             // 文字列の場合、TextNodeを追加
@@ -74,19 +68,6 @@
 <body>
   <div id="app"></div>
   <script type="text/babel" data-presets="jsx" >
-    function Strong(props, child) {
-      return <strong {...props}>{child}</strong>;
-    }
-    function StrongAnchor(props, child) {
-      return (
-        <Strong>
-          <a {...props}>
-            【{child}】
-          </a>
-        </Strong>
-      );
-    }
-
     const elements = (
       <>
         <div style={{ backgroundColor: '#ccf' }}>
@@ -98,9 +79,9 @@
             </button>
           </div>
         </div>
-        <StrongAnchor href="https://babeljs.io/docs/en/babel-standalone" target="_blank">
+        <a href="https://babeljs.io/docs/en/babel-standalone" target="_blank">
           babel/standalone
-        </StrongAnchor>
+        </a>
       </>
     );
 

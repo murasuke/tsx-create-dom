@@ -4,18 +4,15 @@
   <title>jsxから自作関数でDOMに変換するサンプル(独自コンポーネント追加)</title>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script>
-     Babel.registerPreset('tsx', {
+    Babel.registerPreset('jsx', {
       presets: [
         [Babel.availablePresets['env']]
       ],
       plugins: [
-        [
-          Babel.availablePlugins['transform-typescript'],
-          {allExtensions: true, isTSX: true}],
-        [
-          Babel.availablePlugins['transform-react-jsx'],
-          {pragma:'h', pragmaFrag: 'div'},
-        ]
+          [
+            Babel.availablePlugins['transform-react-jsx'],
+            {pragma:'h', pragmaFrag: '"div"'},
+          ]
       ],
     });
   </script>
@@ -76,39 +73,31 @@
 </head>
 <body>
   <div id="app"></div>
-  <script type="text/babel" data-presets="tsx" >
-    function Strong(props, child) {
-      return <strong {...props}>{child}</strong>;
+  <script type="text/babel" data-presets="jsx" >
+    function Strong(props, ...children) {
+      return <strong {...props}>{children}</strong>;
     }
-    function StrongAnchor(props, child) {
+    function StrongAnchor(props, ...children) {
       return (
         <Strong>
           <a {...props}>
-            【{child}】
+            【{children}】
           </a>
+          ：
+          <span style={{"font-style":"italic"}}>Italic</span>
         </Strong>
       );
     }
 
     const elements = (
       <>
-        <div style={{ backgroundColor: '#ccf' }}>
-          <h2 style={{"font-style":"italic"}}>jsxから自作関数でDOMに変換するサンプル</h2>
-          <div id="div1" className="classname1">
-            <input type="text" id="text1" value="text1" />
-            <button onclick={() => alert(document.getElementById('text1').value)}>
-              show textbox value
-            </button>
-          </div>
-        </div>
         <StrongAnchor href="https://babeljs.io/docs/en/babel-standalone" target="_blank">
           babel/standalone
         </StrongAnchor>
       </>
     );
 
-    const app: HTMLElement = document.getElementById('app');
-    app.appendChild(elements);
+    document.getElementById('app').appendChild(elements);
   </script>
 </body>
 </html>

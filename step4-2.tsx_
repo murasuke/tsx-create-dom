@@ -1,11 +1,3 @@
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      a: { href: string; target: '_blank' | '_self' | '_parent' | '_top' };
-    }
-  }
-}
-
 /**
  * DOMに変換する関数
  * ・React.createElement()や、hyperscript()のようにDOMを生成する関数
@@ -18,7 +10,7 @@ declare global {
  * ・h('div',null, 'text')
  *    ⇒ <div>text</div>
  */
-export function h(tag, props, ...children) {
+function h(tag, props, ...children) {
   if (typeof tag === 'function') {
     // 先頭が大文字のタグは関数に変換されるためそのまま呼び出す
     return tag(props, children);
@@ -59,22 +51,14 @@ export function h(tag, props, ...children) {
   return elm;
 }
 
-// <>～</>(Fragment)変換用
-// tsconfigの「"jsxFragmentFactory": "hf"」で指定した関数
-function hf(props, child) {
-  <div {...props}>{child}</div>;
+function Strong(props, ...children) {
+  return <strong {...props}>{children}</strong>;
 }
-
-function Strong(props, child: (HTMLElement | string)[]): HTMLElement {
-  return <strong {...props}>{child}</strong>;
-}
-function StrongAnchor(
-  props: { href: string; target?: '_blank' | '_self' | '_parent' | '_top' },
-  child: (HTMLElement | string)[]
-): HTMLElement {
+function StrongAnchor(props, ...children) {
   return (
     <Strong>
-      <a {...props}>【{child}】</a>
+      <a {...props}>【{children}】</a>：
+      <span style={{ 'font-style': 'italic' }}>Italic</span>
     </Strong>
   );
 }
@@ -86,7 +70,7 @@ const elements = (
         jsxから自作関数でDOMに変換するサンプル
       </h2>
       <div id="div1" className="classname1">
-        <input type="text" id="text1" value="text1" place />
+        <input type="text" id="text1" value="text1" />
         <button
           onclick={() =>
             alert((document.getElementById('text1') as HTMLInputElement).value)
@@ -96,12 +80,12 @@ const elements = (
         </button>
       </div>
     </div>
-    <StrongAnchor href="https://babeljs.io/docs/en/babel-standalone">
+    <StrongAnchor
+      href="https://babeljs.io/docs/en/babel-standalone"
+      target="_blank"
+    >
       babel/standalone
     </StrongAnchor>
-    <a href="https://babeljs.io" target="_blank" id="id">
-      babel
-    </a>
   </>
 );
 

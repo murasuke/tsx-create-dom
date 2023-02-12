@@ -1,3 +1,33 @@
+// 属性を再帰的に省略可能にするユーティリティー
+type NestedPartial<T> = {
+  [K in keyof T]?: T[K] extends Array<infer R>
+    ? Array<NestedPartial<R>>
+    : NestedPartial<T[K]>;
+};
+
+// type DeepPartial<T> = {
+//   [P in keyof T]?: T[P] extends Array<infer U>
+//     ? Array<DeepPartial<U>>
+//     : T[P] extends ReadonlyArray<infer UU>
+//     ? ReadonlyArray<DeepPartial<UU>>
+//     : DeepPartial<T[P]>;
+// };
+
+// type NestedPartial<T> = {
+//   [K in keyof T]?: T[K] extends Array<infer R>
+//     ? Array<NestedPartial<R>>
+//     : T[K] extends unknown
+//     ? unknown
+//     : NestedPartial<T[K]>;
+// };
+
+// jsxの型定義
+declare global {
+  namespace JSX {
+    interface IntrinsicElements extends NestedPartial<HTMLElementTagNameMap> {}
+  }
+}
+
 /**
  * DOMに変換する関数
  * ・React.createElement()や、hyperscript()のようにDOMを生成する関数
@@ -10,7 +40,7 @@
  * ・h('div',null, 'text')
  *    ⇒ <div>text</div>
  */
-function h(tag, props, ...children) {
+export function h(tag, props, ...children) {
   if (typeof tag === 'function') {
     // 先頭が大文字のタグは関数に変換されるためそのまま呼び出す
     return tag(props, children);
@@ -52,18 +82,29 @@ function h(tag, props, ...children) {
 }
 
 // <>～</>(Fragment)変換用
-// tsconfigの「"jsxFragmentFactory": "hf"」で指定した関数
-function hf(props, child) {
-  <div {...props}>{child}</div>;
+// tsconfigの「"jsxFragmentFactory": "JsxFragmentFactory"」で指定した関数
+function JsxFragmentFactory(
+  props: NestedPartial<HTMLElement> /*HTMLElement*/,
+  ...children: (HTMLElement | string)[]
+) {
+  const d = document.createElement('div');
+  return <div {...props}>{children}</div>;
 }
 
-function Strong(props, child) {
-  return <strong {...props}>{child}</strong>;
+function Strong(
+  props: NestedPartial<HTMLElement>,
+  ...children: (HTMLElement | string)[]
+) {
+  return <strong {...props}>{children}</strong>;
 }
-function StrongAnchor(props, child) {
+function StrongAnchor(
+  props: NestedPartial<HTMLAnchorElement>,
+  children: (HTMLElement | string)[]
+) {
   return (
     <Strong>
-      <a {...props}>【{child}】</a>
+      <a {...props}>【{children}】</a>：
+      <span style={{ fontStyle: 'italic' }}>Italic</span>
     </Strong>
   );
 }
@@ -71,11 +112,11 @@ function StrongAnchor(props, child) {
 const elements = (
   <>
     <div style={{ backgroundColor: '#ccf' }}>
-      <h2 style={{ 'font-style': 'italic' }}>
+      <h2 style={{ fontStyle: 'italic' }}>
         jsxから自作関数でDOMに変換するサンプル
       </h2>
       <div id="div1" className="classname1">
-        <input type="text" id="text1" value="text1" place />
+        <input type="text" id="text1" value="text1" />
         <button
           onclick={() =>
             alert((document.getElementById('text1') as HTMLInputElement).value)
@@ -88,6 +129,7 @@ const elements = (
     <StrongAnchor
       href="https://babeljs.io/docs/en/babel-standalone"
       target="_blank"
+      onclick={(e: MouseEvent) => e.preventDefault()}
     >
       babel/standalone
     </StrongAnchor>

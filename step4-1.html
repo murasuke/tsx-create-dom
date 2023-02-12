@@ -1,18 +1,21 @@
 <!DOCTYPE html>
 <head>
   <meta charset="utf-8">
-  <title>jsxから自作関数でDOMに変換するサンプル</title>
+  <title>④-1 babelの設定を変更してTypeScriptをトランスパイルできるようにする</title>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script>
-    Babel.registerPreset('jsx', {
+     Babel.registerPreset('tsx', {
       presets: [
         [Babel.availablePresets['env']]
       ],
       plugins: [
-          [
-            Babel.availablePlugins['transform-react-jsx'],
-            {pragma:'h', pragmaFrag: 'div'},
-          ]
+        [
+          Babel.availablePlugins['transform-typescript'],
+          {allExtensions: true, isTSX: true}],
+        [
+          Babel.availablePlugins['transform-react-jsx'],
+          {pragma:'h', pragmaFrag: '"div"'},
+        ]
       ],
     });
   </script>
@@ -30,6 +33,11 @@
      *    ⇒ <div>text</div>
      */
      function h(tag, props, ...children) {
+      if (typeof tag === 'function') {
+        // 先頭が大文字のタグは関数に変換されるためそのまま呼び出す
+        return tag(props, children);
+      }
+
       // elementを作成
       const elm = document.createElement(tag);
       // 属性を追加
@@ -50,7 +58,8 @@
 
       // 子要素の追加
       if (Array.isArray(children)) {
-        flatten = children.flat();
+        // 入れ子の配列を平坦化
+        const flatten = children.flat(20);
         for (const child of flatten) {
           if (typeof child === 'string') {
             // 文字列の場合、TextNodeを追加
@@ -67,7 +76,23 @@
 </head>
 <body>
   <div id="app"></div>
-  <script type="text/babel" data-presets="jsx" >
+  <script type="text/babel" data-presets="tsx" >
+    function Strong(props, ...children) {
+      return <strong {...props}>{children}</strong>;
+    }
+    function StrongAnchor(props, ...children) {
+      return (
+        <Strong>
+          <a {...props}>
+            【{children}】
+          </a>
+          ：
+          <span style={{"font-style":"italic"}}>Italic</span>
+        </Strong>
+      );
+    }
+
+
     const elements = (
       <>
         <div style={{ backgroundColor: '#ccf' }}>
@@ -79,13 +104,14 @@
             </button>
           </div>
         </div>
-        <a href="https://babeljs.io/docs/en/babel-standalone" target="_blank">
+        <StrongAnchor href="https://babeljs.io/docs/en/babel-standalone" target="_blank">
           babel/standalone
-        </a>
+        </StrongAnchor>
       </>
     );
 
-    document.getElementById('app').appendChild(elements);
+    const app: HTMLElement = document.getElementById('app');
+    app.appendChild(elements);
   </script>
 </body>
 </html>

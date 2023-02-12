@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <head>
   <meta charset="utf-8">
-  <title>jsxから自作関数でDOMに変換するサンプル(TypeScript外部ファイル化)</title>
+  <title>④-3 TypeScriptの設定を追加し、VSCodeでエラーのチェックができるように設定</title>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script>
      Babel.registerPreset('tsx', {
@@ -14,7 +14,7 @@
           {allExtensions: true, isTSX: true}],
         [
           Babel.availablePlugins['transform-react-jsx'],
-          {pragma:'h', pragmaFrag: 'div'},
+          {pragma:'h', pragmaFrag: '"div"'},
         ]
       ],
     });
@@ -22,7 +22,6 @@
 </head>
 <body>
   <div id="app"></div>
-  <script type="text/babel" data-presets="tsx" src="step2-2.tsx"></script>
-  <input type="text" id="text1" value="text1" place />
+  <script type="text/babel" data-presets="tsx" src="step4-3.tsx"></script>
 </body>
 </html>
