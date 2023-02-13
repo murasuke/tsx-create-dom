@@ -9,19 +9,7 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
-/**
- * DOMに変換する関数
- * ・React.createElement()や、hyperscript()のようにDOMを生成する関数
- *   tag: タグ名
- *   props: タグの属性
- *   children: 子要素
- * 変換サンプル
- * ・h('div')
- *    ⇒ <div></div>
- * ・h('div',null, 'text')
- *    ⇒ <div>text</div>
- */
-function h(tag, props) {
+export function h(tag, props) {
     var children = [];
     for (var _i = 2; _i < arguments.length; _i++) {
         children[_i - 2] = arguments[_i];
@@ -69,7 +57,7 @@ function h(tag, props) {
 }
 // <>～</>(Fragment)変換用
 // tsconfigの「"jsxFragmentFactory": "JsxFragmentFactory"」で指定した関数
-function JsxFragmentFactory(props /*HTMLElement*/) {
+export function JsxFragmentFactory(props /*HTMLElement*/) {
     var children = [];
     for (var _i = 1; _i < arguments.length; _i++) {
         children[_i - 1] = arguments[_i];
@@ -77,31 +65,3 @@ function JsxFragmentFactory(props /*HTMLElement*/) {
     var d = document.createElement('div');
     return h("div", __assign({}, props), children);
 }
-function Strong(props) {
-    var children = [];
-    for (var _i = 1; _i < arguments.length; _i++) {
-        children[_i - 1] = arguments[_i];
-    }
-    return h("strong", __assign({}, props), children);
-}
-function StrongAnchor(props, children) {
-    return (h(Strong, null,
-        h("a", __assign({}, props),
-            "\u3010",
-            children,
-            "\u3011"),
-        "\uFF1A",
-        h("span", { style: { fontStyle: 'italic' } }, "Italic")));
-}
-var elements = (h(JsxFragmentFactory, null,
-    h("div", { style: { backgroundColor: '#ccf' } },
-        h("h2", { style: { fontStyle: 'italic' } }, "jsx\u304B\u3089\u81EA\u4F5C\u95A2\u6570\u3067DOM\u306B\u5909\u63DB\u3059\u308B\u30B5\u30F3\u30D7\u30EB"),
-        h("div", { id: "div1", className: "classname1" },
-            h("input", { type: "text", id: "text1", value: "text1" }),
-            h("button", { onclick: function () {
-                    return alert(document.getElementById('text1').value);
-                } }, "show textbox value"))),
-    h(StrongAnchor, { href: "https://babeljs.io/docs/en/babel-standalone", target: "_blank" }, "babel/standalone")));
-var app = document.getElementById('app');
-app.appendChild(elements);
-export {};

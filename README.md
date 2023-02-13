@@ -765,17 +765,6 @@ TypeSciprtの設定を行いましたが、tsxには型情報がないため、�
 Reactでは、ライブラリ側が各タグの型情報を提供しているためタグに応じた選択肢が表示されます。
 Reactのように全部のタグを正確に定義するのは難しいですが、可能な限り定義してみます。
 
-### 準備
-h()関数に`export`を追加します。
-
-(`interface IntrinsicElements`定義時、ESModuleとして認識されないとエラーとなってしますためです)
-```javascript
-export function h(tag, props, ...children) {
-  if (typeof tag === 'function') {
-    // 先頭が大文字のタグは関数に変換されるためそのまま呼び出す
-    return tag(props, children);
-  }
-```
 
 #### tsxの型定義の仕組み
 
@@ -830,7 +819,7 @@ interface IntrinsicElements {
 なので、再帰的に適用する型を別途定義して、そちらを利用するように変更します。
 
 ```typescript
-type NestedPartial<T> = {
+export type NestedPartial<T> = {
   [K in keyof T]?: T[K] extends Array<infer R>
     ? Array<NestedPartial<R>>
     : NestedPartial<T[K]>;
@@ -973,7 +962,7 @@ htmlを表示すると、Babelで実行していた場合と同じ画面が表�
 型定義(jsx-global.d.ts)
 ```typescript
 // 属性を再帰的に省略可能にするユーティリティー
-type NestedPartial<T> = {
+export type NestedPartial<T> = {
   [K in keyof T]?: T[K] extends Array<infer R>
     ? Array<NestedPartial<R>>
     : NestedPartial<T[K]>;
@@ -989,6 +978,7 @@ declare global {
 
 DOM生成関数(dom-generator.tsx)
 ```typescript
+import { NestedPartial } from 'jsx-global';
 /**
  * DOMに変換する関数
  * ・React.createElement()や、hyperscript()のようにDOMを生成する関数
@@ -1055,16 +1045,24 @@ export function JsxFragmentFactory(
 
 Strong.tsx
 ```typescript
+import { NestedPartial } from './jsx-global.js';
+import { h } from './dom-generator.js';
+
 export function Strong(
   props: NestedPartial<HTMLElement>,
   ...children: (HTMLElement | string)[]
 ) {
   return <strong {...props}>{children}</strong>;
 }
+
 ```
 
 StrongAnchor.tsx
 ```typescript
+import { NestedPartial } from './jsx-global.js';
+import { h } from './dom-generator.js';
+import { Strong } from './Strong.js';
+
 export function StrongAnchor(
   props: NestedPartial<HTMLAnchorElement>,
   children: (HTMLElement | string)[]
@@ -1076,4 +1074,19 @@ export function StrongAnchor(
     </Strong>
   );
 }
+```
+
+
+step5.html
+```html
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <title>⑤ 全て1スクリプトファイルに詰め込んでいたのを、分割して再利用可能にする</title>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module" src="step5.js"></script>
+</body>
+</html>
 ```

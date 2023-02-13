@@ -1,5 +1,5 @@
 // 属性を再帰的に省略可能にするユーティリティー
-type NestedPartial<T> = {
+export type NestedPartial<T> = {
   [K in keyof T]?: T[K] extends Array<infer R>
     ? Array<NestedPartial<R>>
     : NestedPartial<T[K]>;
@@ -40,7 +40,7 @@ declare global {
  * ・h('div',null, 'text')
  *    ⇒ <div>text</div>
  */
-export function h(tag, props, ...children) {
+function h(tag, props, ...children) {
   if (typeof tag === 'function') {
     // 先頭が大文字のタグは関数に変換されるためそのまま呼び出す
     return tag(props, children);
@@ -129,7 +129,6 @@ const elements = (
     <StrongAnchor
       href="https://babeljs.io/docs/en/babel-standalone"
       target="_blank"
-      onclick={(e: MouseEvent) => e.preventDefault()}
     >
       babel/standalone
     </StrongAnchor>
