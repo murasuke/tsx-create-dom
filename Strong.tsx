@@ -1,4 +1,4 @@
-import { NestedPartial } from './jsx-global.d.ts';
+import { NestedPartial } from './jsx-global.d.js';
 import { h } from './dom-generator.js';
 
 export function Strong(
