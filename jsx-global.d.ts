@@ -8,6 +8,7 @@ export type NestedPartial<T> = {
 // jsxの型定義
 declare global {
   namespace JSX {
+    type Element = Node;
     interface IntrinsicElements extends NestedPartial<HTMLElementTagNameMap> {}
   }
 }

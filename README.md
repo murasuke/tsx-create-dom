@@ -23,6 +23,7 @@ jsxって便利ですよね。スクリプト内に、タグを書いておけ�
 
 * jsxではjsxで型のチェックができないため、tsx化＋タグの型チェックも行います(第2章)
 
+※単にDOM生成をjsxで肩代わりするだけなので、書き換え等はDOMを直接書き換える(jquery使うのと同じ)必要があります
 
 ## ①準備
 
@@ -451,12 +452,12 @@ tagが関数の場合は、その関数を呼び出す処理を追加します
         // 入れ子の配列を平坦化
         const flatten = children.flat(20);
         for (const child of flatten) {
-          if (typeof child === 'string') {
+          if (typeof child === 'object') {
+            // Nodeをそのまま追加(先に子側が生成され、それが渡される)
+            elm.appendChild(child);
+          } else {
             // 文字列の場合、TextNodeを追加
             elm.appendChild(document.createTextNode(child));
-          } else {
-            // 上記以外はNodeをそのまま追加(先に子側が生成され、それが渡される)
-            elm.appendChild(child);
           }
         }
       }
@@ -687,12 +688,12 @@ function h(tag, props, ...children) {
     // 入れ子の配列を平坦化
     const flatten = children.flat(20);
     for (const child of flatten) {
-      if (typeof child === 'string') {
+      if (typeof child === 'object') {
+        // Nodeをそのまま追加(先に子側が生成され、それが渡される)
+        elm.appendChild(child);
+      } else {
         // 文字列の場合、TextNodeを追加
         elm.appendChild(document.createTextNode(child));
-      } else {
-        // 上記以外はNodeをそのまま追加(先に子側が生成され、それが渡される)
-        elm.appendChild(child);
       }
     }
   }
@@ -868,6 +869,7 @@ interface HTMLElementTagNameMap {
 最終的には
 * IntrinsicElementをHTMLElementTagNameMapから継承します(全ての定義を引き継ぐ)
 * 継承する際、各属性を再帰的に省略可能にします(NestedPartial<T>)
+* jsxの戻り値をNodeに指定(DOMの基本的な機能を持つ型)
 
 ```typescript
 type NestedPartial<T> = {
@@ -879,6 +881,7 @@ type NestedPartial<T> = {
 // 各タグの型定義
 declare global {
   namespace JSX {
+    type Element = Node; // jsxの戻り値をNodeにする(指定しないとanyになる)
     interface IntrinsicElements extends NestedPartial<HTMLElementTagNameMap> {}
   }
 }
@@ -952,12 +955,25 @@ htmlを表示すると、Babelで実行していた場合と同じ画面が表�
 
 ## ⑤ 全て1スクリプトファイルに詰め込んでいたのを、分割して再利用可能にする
 
-スクリプトファイルを
+スクリプトファイルを機能ごとにファイル分割します。
 * 型定義
 * DOM生成関数
 * 独自コンポーネント
 * 画面(のjsx定義)
 
+step5.html
+```html
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <title>⑤ 全て1スクリプトファイルに詰め込んでいたのを、分割して再利用可能にする</title>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module" src="step5.js"></script>
+</body>
+</html>
+```
 
 型定義(jsx-global.d.ts)
 ```typescript
@@ -971,6 +987,7 @@ export type NestedPartial<T> = {
 // jsxの型定義
 declare global {
   namespace JSX {
+    type Element = Node;
     interface IntrinsicElements extends NestedPartial<HTMLElementTagNameMap> {}
   }
 }
@@ -1020,12 +1037,12 @@ export function h(tag, props, ...children) {
     // 入れ子の配列を平坦化
     const flatten = children.flat(20);
     for (const child of flatten) {
-      if (typeof child === 'string') {
+      if (typeof child === 'object') {
+        // Nodeをそのまま追加(先に子側が生成され、それが渡される)
+        elm.appendChild(child);
+      } else {
         // 文字列の場合、TextNodeを追加
         elm.appendChild(document.createTextNode(child));
-      } else {
-        // 上記以外はNodeをそのまま追加(先に子側が生成され、それが渡される)
-        elm.appendChild(child);
       }
     }
   }
@@ -1089,4 +1106,43 @@ step5.html
   <script type="module" src="step5.js"></script>
 </body>
 </html>
+```
+
+## ⑥ ボタンクリックでカウントアップする簡単なサンプル
+![img](./img/img60.png)
+
+Reactのように、DOMを再描画する機能はないので下記のように書き換えます(jquery等で書きかえるのと原理的に同じです)
+* ①jsxで生成したDOMを直接書き換える
+* ②DOMを置き換える
+
+step6.tsx
+```typescript
+import { h, JsxFragmentFactory } from './dom-generator.js';
+
+document.addEventListener('DOMContentLoaded', (event) => {
+  let count = 0;
+  let Counter = (<div>Count: {count}</div>) as HTMLDivElement;
+  // ①内部のTextを書き換える
+  const handleInc = () => {
+    Counter.innerText = `Count: ${++count}`;
+  };
+
+  const elements = (
+    <>
+      {Counter}
+      <button onclick={handleInc}>Increment</button>
+      <button onclick={handleDec}>Decrement</button>
+    </>
+  );
+
+  // ②新しい<div>タグを作り、元と入れ替える
+  function handleDec() {
+    const replace = (<div>Count: {--count}</div>) as HTMLDivElement;
+    elements.replaceChild(replace, Counter);
+    Counter = replace;
+  }
+
+  const app: HTMLElement = document.getElementById('app');
+  app.appendChild(elements);
+});
 ```

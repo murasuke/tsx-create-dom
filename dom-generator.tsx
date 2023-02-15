@@ -12,7 +12,6 @@ import { NestedPartial } from 'jsx-global';
  * ・h('div',null, 'text')
  *    ⇒ <div>text</div>
  */
-export function h(tag: 'input', props, ...children): HTMLInputElement;
 export function h(tag, props, ...children) {
   if (typeof tag === 'function') {
     // 先頭が大文字のタグは関数に変換されるためそのまま呼び出す
@@ -42,12 +41,12 @@ export function h(tag, props, ...children) {
     // 入れ子の配列を平坦化
     const flatten = children.flat(20);
     for (const child of flatten) {
-      if (typeof child === 'string') {
+      if (typeof child === 'object') {
+        // Nodeをそのまま追加(先に子側が生成され、それが渡される)
+        elm.appendChild(child);
+      } else {
         // 文字列の場合、TextNodeを追加
         elm.appendChild(document.createTextNode(child));
-      } else {
-        // 上記以外はNodeをそのまま追加(先に子側が生成され、それが渡される)
-        elm.appendChild(child);
       }
     }
   }

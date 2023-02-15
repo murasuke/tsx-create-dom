@@ -13,9 +13,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         </h2>
         <div id="div1" className="classname1">
           {input}
-          <button onclick={() => (input.value = new Date().toString())}>
-            show textbox value
-          </button>
+          <button onclick={() => alert(input.value)}>show textbox value</button>
         </div>
       </div>
       <StrongAnchor

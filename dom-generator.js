@@ -9,6 +9,18 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
+/**
+ * DOMに変換する関数
+ * ・React.createElement()や、hyperscript()のようにDOMを生成する関数
+ *   tag: タグ名
+ *   props: タグの属性
+ *   children: 子要素
+ * 変換サンプル
+ * ・h('div')
+ *    ⇒ <div></div>
+ * ・h('div',null, 'text')
+ *    ⇒ <div>text</div>
+ */
 export function h(tag, props) {
     var children = [];
     for (var _i = 2; _i < arguments.length; _i++) {
@@ -43,13 +55,13 @@ export function h(tag, props) {
         var flatten = children.flat(20);
         for (var _a = 0, flatten_1 = flatten; _a < flatten_1.length; _a++) {
             var child = flatten_1[_a];
-            if (typeof child === 'string') {
-                // 文字列の場合、TextNodeを追加
-                elm.appendChild(document.createTextNode(child));
+            if (typeof child === 'object') {
+                // Nodeをそのまま追加(先に子側が生成され、それが渡される)
+                elm.appendChild(child);
             }
             else {
-                // 上記以外はNodeをそのまま追加(先に子側が生成され、それが渡される)
-                elm.appendChild(child);
+                // 文字列の場合、TextNodeを追加
+                elm.appendChild(document.createTextNode(child));
             }
         }
     }
